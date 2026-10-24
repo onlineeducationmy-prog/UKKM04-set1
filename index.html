@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ms" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Ujian Kecenderungan Kemasukan MRSM (UKKM)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-blue-50 text-slate-800 h-full flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+
+    <!-- Header (Biru Gelap) -->
+    <header class="bg-slate-900 border-b border-slate-800 shadow-md sticky top-0 z-40 text-white">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div>
+                <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                    <span class="bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full uppercase font-semibold">UKKM</span> 
+                    SIMULASI UKKM 
+                </h1>
+                <p class="text-xs text-slate-300 mt-0.5">Persediaan latihan kemasukan MRSM</p>
+            </div>
+            <div id="stats-header" class="hidden flex items-center gap-3 text-sm bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 shadow-sm text-white">
+                <button onclick="confirmChangeCategory()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-2.5 py-1.5 rounded-lg transition font-medium flex items-center gap-1 border border-slate-600 shadow-sm">
+                    <i class="fa-solid fa-bars"></i>
+                    Pilih Kategori
+                </button>
+                <div class="h-4 w-px bg-slate-600"></div>
+                <div id="score-counter-wrap">Skor: <span id="header-score" class="font-bold text-blue-400">0</span></div>
+                <div class="h-4 w-px bg-slate-600"></div>
+                <div><span id="subject-timer-label">Masa Subjek</span>: <span id="timer-display" class="font-mono font-bold text-amber-400">30:00</span></div>
+                <div class="h-4 w-px bg-slate-600"></div>
+                <button onclick="confirmSubmitQuiz()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Hantar Ujian
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
+
+        <!-- Screen 1: Dashboard / Home -->
+        <div id="screen-home" class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xl text-center max-w-4xl mx-auto w-full">
+            <div class="inline-block p-3 bg-blue-50 text-blue-600 rounded-2xl mb-4 border border-blue-200">
+                <i class="fa-solid fa-graduation-cap text-3xl"></i>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Selamat Datang ke Simulasi UKKM Set 1</h2>
+            <p class="text-slate-600 max-w-xl mx-auto mb-8 text-sm sm:text-base">
+                Persediaan komprehensif merangkumi modul akademik serta penilaian personaliti untuk calon MRSM.
+            </p>
+
+            <!-- Utama: Kategori Gabungan (MYMRSM & SPSKT) -->
+            <div class="mb-8">
+                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 text-left">Pilihan Kategori Permohonan (Simulasi Penuh)</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                    <button onclick="startQuiz('mymrsm')" class="group p-5 bg-gradient-to-r from-blue-50 to-white hover:from-blue-100 hover:to-white rounded-xl border border-blue-200 hover:border-blue-400 transition-all flex flex-col justify-between shadow-sm">
+                        <div>
+                            <div class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Modul ini untuk pelajar yang TIDAK menduduki PKSK</div>
+                            <div class="text-lg font-bold text-slate-900 group-hover:text-blue-700 transition-colors">Calon Sistem MYMRSM</div>
+                            <p class="text-xs text-slate-600 mt-1">Matematik, Sains, Bahasa Melayu & Keperibadian</p>
+                        </div>
+                        <div class="mt-4 flex items-center text-xs font-medium text-blue-600 group-hover:translate-x-1 transition-transform">Mula Simulasi MYMRSM &rarr;</div>
+                    </button>
+
+                    <button onclick="startQuiz('spskt')" class="group p-5 bg-gradient-to-r from-emerald-50 to-white hover:from-emerald-100 hover:to-white rounded-xl border border-emerald-200 hover:border-emerald-400 transition-all flex flex-col justify-between shadow-sm">
+                        <div>
+                            <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Modul ini untuk pelajar yang SUDAH menduduki PKSK</div>
+                            <div class="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">Calon Sistem SPSKT</div>
+                            <p class="text-xs text-slate-600 mt-1">Matematik, Sains & Keperibadian (Tanpa Bahasa Melayu)</p>
+                        </div>
+                        <div class="mt-4 flex items-center text-xs font-medium text-emerald-600 group-hover:translate-x-1 transition-transform">Mula Simulasi SPSKT &rarr;</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bahagian Bawah: Latihan Subjek Individu -->
+            <div>
+                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 text-left">Latihan Mengikut Modul Individu</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+                    <button onclick="startQuiz('matematik')" class="group p-4 bg-slate-50 hover:bg-white rounded-xl border border-slate-200 hover:border-blue-400 transition-all flex flex-col justify-between shadow-sm">
+                        <div>
+                            <div class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Modul</div>
+                            <div class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Matematik</div>
+                            <p class="text-xs text-slate-500 mt-1">30 Soalan • 30 Min</p>
+                        </div>
+                        <div class="mt-3 flex items-center text-xs font-medium text-blue-600 group-hover:translate-x-1 transition-transform">Mula &rarr;</div>
+                    </button>
+
+                    <button onclick="startQuiz('sains')" class="group p-4 bg-slate-50 hover:bg-white rounded-xl border border-slate-200 hover:border-emerald-400 transition-all flex flex-col justify-between shadow-sm">
+                        <div>
+                            <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Modul</div>
+                            <div class="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Sains</div>
+                            <p class="text-xs text-slate-500 mt-1">30 Soalan • 35 Min</p>
+                        </div>
+                        <div class="mt-3 flex items-center text-xs font-medium text-emerald-600 group-hover:translate-x-1 transition-transform">Mula &rarr;</div>
+                    </button>
+
+                    <button onclick="startQuiz('bm')" class="group p-4 bg-slate-50 hover:bg-white rounded-xl border border-slate-200 hover:border-amber-400 transition-all flex flex-col justify-between shadow-sm">
+                        <div>
+                            <div class="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-1">Modul</div>
+                            <div class="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors">Bahasa Melayu</div>
+                            <p class="text-xs text-slate-500 mt-1">30 Soalan • 30 Min</p>
+                        </div>
+                        <div class="mt-3 flex items-center text-xs font-medium text-amber-600 group-hover:translate-x-1 transition-transform">Mula &rarr;</div>
+                    </button>
+
+                    <button onclick="startQuiz('personaliti')" class="group p-4 bg-purple-50 hover:bg-white rounded-xl border border-purple-200 hover:border-purple-400 transition-all flex flex-col justify-between shadow-sm">
+                        <div>
+                            <div class="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-1">Modul</div>
+                            <div class="text-base font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Keperibadian</div>
+                            <p class="text-xs text-slate-500 mt-1">80 Pernyataan • 30 Min</p>
+                        </div>
+                        <div class="mt-3 flex items-center text-xs font-medium text-purple-600 group-hover:translate-x-1 transition-transform">Mula &rarr;</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Quiz Room with Question Navigator Grid Sidebar -->
+        <div id="screen-quiz" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full">
+            <!-- Left 2 Columns: Question Card -->
+            <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xl flex flex-col justify-between">
+                <div>
+                    <!-- Top Question Meta -->
+                    <div class="flex justify-between items-center mb-6 text-sm">
+                        <span id="question-progress" class="font-semibold text-blue-600">Soalan 1 daripada 30</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleBookmark()" id="bookmark-btn" class="text-slate-400 hover:text-amber-500 transition px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex items-center gap-1.5">
+                                <i class="fa-regular fa-bookmark" id="bookmark-icon"></i>
+                                <span id="bookmark-text">Tanda</span>
+                            </button>
+                            <span id="category-badge" class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border border-blue-200">Matematik</span>
+                        </div>
+                    </div>
+
+                    <!-- Question Text -->
+                    <div id="question-text" class="text-lg sm:text-xl font-medium text-slate-900 mb-6 leading-relaxed">
+                        <!-- Soalan dimasukkan secara dinamik -->
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div id="options-container" class="space-y-3 mb-6">
+                        <!-- Pilihan jawapan dinamik -->
+                    </div>
+
+                    <!-- Explanation Box -->
+                    <div id="explanation-box" class="hidden p-4 rounded-xl bg-blue-50 border border-blue-200 text-sm mb-6 animate-fadeIn">
+                        <div id="explanation-title" class="font-semibold mb-1 text-blue-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-info text-blue-600"></i>
+                            Huraian Fakta:
+                        </div>
+                        <p id="explanation-text" class="text-blue-800 leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex justify-between items-center pt-4 border-t border-slate-200">
+                    <button id="btn-prev" onclick="prevQuestion()" class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-sm font-medium rounded-xl transition flex items-center gap-1 border border-slate-300 shadow-sm">
+                        &larr; Sebelumnya
+                    </button>
+                    <button id="btn-next" onclick="nextQuestion()" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition shadow-md flex items-center gap-1">
+                        Seterusnya &rarr;
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right 1 Column: Question Navigation Grid Sidebar -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xl flex flex-col justify-between sticky top-20">
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-blue-600"></i>
+                            Navigasi Soalan
+                        </h3>
+                        <span id="answered-count-badge" class="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-200">0 Dijawab</span>
+                    </div>
+
+                    <!-- Subject Tabs for Multi-module tests (MYMRSM/SPSKT) -->
+                    <div id="subject-tabs-container" class="flex flex-wrap gap-1 mb-3 bg-slate-100 p-1 rounded-xl border border-slate-200 hidden">
+                        <!-- Dijana secara dinamik -->
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="grid grid-cols-3 gap-1 text-[11px] text-slate-600 mb-4 bg-slate-50 p-2 rounded-xl border border-slate-200 text-center">
+                        <div class="flex items-center justify-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Dijawab</div>
+                        <div class="flex items-center justify-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Ditanda</div>
+                        <div class="flex items-center justify-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-200 inline-block"></span> Belum</div>
+                    </div>
+
+                    <!-- Question Grid Buttons -->
+                    <div id="nav-grid-container" class="grid grid-cols-5 gap-2 max-h-[300px] overflow-y-auto pr-1 mb-4">
+                        <!-- Dijana secara dinamik -->
+                    </div>
+                </div>
+
+                <!-- Submit Quiz Button in Sidebar -->
+                <div>
+                    <button onclick="confirmSubmitQuiz()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-3 px-4 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Hantar Jawapan Ujian
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Results -->
+        <div id="screen-result" class="hidden bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xl text-center max-w-4xl mx-auto w-full">
+            <div class="inline-block p-4 bg-emerald-100 text-emerald-600 rounded-full mb-4 border border-emerald-200 shadow-sm">
+                <i class="fa-solid fa-circle-check text-4xl"></i>
+            </div>
+            <h2 id="result-title" class="text-2xl font-bold text-slate-900 mb-2">Keputusan Simulasi UKKM</h2>
+            <p id="result-subtitle" class="text-slate-600 text-sm mb-6">Tahniah kerana telah melengkapkan latihan ini dengan jayanya!</p>
+
+            <div id="result-stats-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-xl mx-auto mb-8">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="text-xs text-slate-500 mb-1">Markah</div>
+                    <div id="res-score" class="text-2xl font-bold text-blue-600">0/30</div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="text-xs text-slate-500 mb-1">Peratusan</div>
+                    <div id="res-percentage" class="text-2xl font-bold text-emerald-600">0%</div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="text-xs text-slate-500 mb-1">Betul</div>
+                    <div id="res-correct" class="text-2xl font-bold text-green-600">0</div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="text-xs text-slate-500 mb-1">Salah</div>
+                    <div id="res-incorrect" class="text-2xl font-bold text-rose-600">0</div>
+                </div>
+            </div>
+
+            <div id="big-five-results-container" class="hidden space-y-4 text-left max-w-2xl mx-auto mb-8">
+                <!-- Dijana secara dinamik mengikut skala OCEAN -->
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-3 max-w-md mx-auto">
+                <button onclick="resetApp()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg text-sm">
+                    Cuba Lagi / Pilih Kategori
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Custom Modal for Confirmation -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl animate-fadeIn">
+            <h3 id="modal-title" class="text-lg font-bold text-slate-900 mb-2">Kembali ke Pemilihan Kategori?</h3>
+            <p id="modal-desc" class="text-slate-600 text-sm mb-6">Kuiz semasa anda akan ditamatkan.</p>
+            <div class="flex gap-3">
+                <button onclick="closeConfirmModal()" class="flex-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 py-2.5 rounded-xl text-sm font-medium transition shadow-sm">Batal</button>
+                <button id="modal-confirm-btn" onclick="executeReturnHome()" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white py-2.5 rounded-xl text-sm font-semibold transition shadow-md">Ya, Keluar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer (Biru Gelap) -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 text-center text-white">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center gap-1">
+            <a href="https://online.education1.my" target="_blank" rel="noopener noreferrer" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3.5 py-1.5 rounded-full text-xs font-medium text-emerald-400 flex items-center gap-2 transition-all shadow-sm">
+                <i class="fa-solid fa-graduation-cap text-emerald-400"></i>
+                <span>online.education1.my</span>
+            </a>
+        </div>
+    </footer>
+
+    <!-- Script Logik Kuiz & Aplikasi -->
+    <script>
+        // Data Soalan Matematik
+        const matematik = [
+          { q: "Berapakah nilai 3/4 daripada 64, kemudian ditolak 8?", options: ["40", "42", "44", "48"], answer: 0, explanation: "3/4 × 64 = 48. Kemudian 48 − 8 = 40.", catName: "Matematik" },
+          { q: "Empat buah buku berharga RM18. Berapakah harga 10 buah buku yang sama?", options: ["RM40", "RM42", "RM45", "RM48"], answer: 2, explanation: "Harga sebuah buku ialah RM18 ÷ 4 = RM4.50. Harga 10 buah buku ialah 10 × RM4.50 = RM45.", catName: "Matematik" },
+          { q: "Purata bagi empat nombor ialah 17. Tiga nombor itu ialah 12, 15 dan 18. Apakah nombor keempat?", options: ["21", "22", "23", "24"], answer: 2, explanation: "Jumlah empat nombor ialah 4 × 17 = 68. Jumlah tiga nombor ialah 12 + 15 + 18 = 45. Nombor keempat ialah 68 − 45 = 23.", catName: "Matematik" },
+          { q: "Sebuah segi empat tepat mempunyai perimeter 54 cm dan panjang 17 cm. Berapakah luasnya?", options: ["150 cm²", "160 cm²", "170 cm²", "180 cm²"], answer: 2, explanation: "Lebar = 54 ÷ 2 − 17 = 10 cm. Luas = 17 × 10 = 170 cm².", catName: "Matematik" },
+          { q: "Hitung 2.4 × 1.5 + 3.6 ÷ 1.2.", options: ["6.3", "6.6", "7.2", "7.5"], answer: 1, explanation: "Darab dan bahagi dahulu: 2.4 × 1.5 = 3.6 dan 3.6 ÷ 1.2 = 3. Jumlahnya ialah 3.6 + 3 = 6.6.", catName: "Matematik" },
+          { q: "Nisbah bilangan guli merah kepada guli biru ialah 3 : 5. Jika terdapat 40 biji guli semuanya, berapakah bilangan guli biru?", options: ["15", "20", "25", "30"], answer: 2, explanation: "Jumlah bahagian = 3 + 5 = 8. Setiap bahagian mewakili 40 ÷ 8 = 5 guli. Guli biru = 5 × 5 = 25.", catName: "Matematik" },
+          { q: "Sebuah beg berharga RM80 diberikan diskaun 15%. Berapakah harga selepas diskaun?", options: ["RM12", "RM65", "RM68", "RM72"], answer: 2, explanation: "Diskaun = 15/100 × RM80 = RM12. Harga selepas diskaun = RM80 − RM12 = RM68.", catName: "Matematik" },
+          { q: "Hitung 5/6 − 1/4.", options: ["1/2", "7/12", "2/3", "3/4"], answer: 1, explanation: "Penyebut sepunya ialah 12. Maka 5/6 − 1/4 = 10/12 − 3/12 = 7/12.", catName: "Matematik" },
+          { q: "Enam orang pekerja menyiapkan suatu kerja dalam 4 hari. Jika semua pekerja bekerja pada kadar yang sama, berapa hari diperlukan oleh 8 orang pekerja untuk menyiapkan kerja yang sama?", options: ["2 hari", "3 hari", "4 hari", "6 hari"], answer: 1, explanation: "Jumlah kerja ialah 6 × 4 = 24 hari-pekerja. Dengan 8 pekerja, masa yang diperlukan ialah 24 ÷ 8 = 3 hari.", catName: "Matematik" },
+          { q: "Sebuah tangki berisi 3/5 daripada kapasiti penuhnya, bersamaan 24 liter. Berapakah kapasiti penuh tangki itu?", options: ["30 liter", "36 liter", "40 liter", "45 liter"], answer: 2, explanation: "3/5 kapasiti = 24 liter. Kapasiti penuh = 24 × 5 ÷ 3 = 40 liter.", catName: "Matematik" },
+          { q: "Sebuah bas bertolak pada pukul 8:15 pagi. Perjalanan mengambil masa 1 jam 47 minit. Pada pukul berapakah bas itu tiba?", options: ["9:52 pagi", "10:02 pagi", "10:12 pagi", "10:22 pagi"], answer: 1, explanation: "8:15 pagi + 1 jam 47 minit = 10:02 pagi.", catName: "Matematik" },
+          { q: "Terdapat 40 biji gula-gula. Sebanyak 3/8 daripadanya dimakan. Kemudian, 1/5 daripada gula-gula yang masih tinggal dimakan. Berapakah biji gula-gula yang tinggal?", options: ["15", "18", "20", "25"], answer: 2, explanation: "3/8 × 40 = 15 dimakan, jadi tinggal 25. Kemudian 1/5 × 25 = 5 dimakan. Baki ialah 25 − 5 = 20.", catName: "Matematik" },
+          { q: "Tiga batang pen berharga RM3 setiap satu. Jumlah harga tiga batang pen dan dua batang pensel ialah RM13. Berapakah harga sebatang pensel?", options: ["RM1", "RM2", "RM3", "RM4"], answer: 1, explanation: "Harga tiga pen = 3 × RM3 = RM9. Baki untuk dua pensel = RM13 − RM9 = RM4. Harga sebatang pensel = RM4 ÷ 2 = RM2.", catName: "Matematik" },
+          { q: "Sebuah segi empat sama mempunyai perimeter 24 cm. Jika panjang setiap sisinya menjadi tiga kali ganda, berapakah perimeter baharu?", options: ["48 cm", "60 cm", "72 cm", "96 cm"], answer: 2, explanation: "Panjang sisi asal = 24 ÷ 4 = 6 cm. Sisi baharu = 6 × 3 = 18 cm. Perimeter baharu = 4 × 18 = 72 cm.", catName: "Matematik" },
+          { q: "Sebuah nombor dua digit mempunyai jumlah digit 11. Digit puluhnya adalah 3 lebih besar daripada digit sa. Apakah nombor itu?", options: ["47", "65", "74", "83"], answer: 2, explanation: "Digit yang jumlahnya 11 dan berbeza sebanyak 3 ialah 7 dan 4. Digit puluh ialah 7, maka nombornya ialah 74.", catName: "Matematik" },
+          { q: "Ali lebih tua daripada Bala. Chia lebih muda daripada Bala. Siapakah yang berada di tengah-tengah mengikut umur, daripada paling tua kepada paling muda?", options: ["Ali", "Bala", "Chia", "Tidak dapat ditentukan"], answer: 1, explanation: "Susunan umur ialah Ali, Bala, kemudian Chia. Oleh itu, Bala berada di tengah-tengah.", catName: "Matematik" },
+          { q: "Apakah nombor seterusnya dalam pola 3, 8, 15, 24, 35, ...?", options: ["44", "46", "48", "50"], answer: 2, explanation: "Perbezaannya ialah +5, +7, +9 dan +11. Perbezaan seterusnya ialah +13. Maka 35 + 13 = 48.", catName: "Matematik" },
+          { q: "Apakah nombor seterusnya dalam pola 2, 6, 12, 20, 30, ...?", options: ["36", "40", "42", "44"], answer: 2, explanation: "Perbezaannya ialah +4, +6, +8 dan +10. Perbezaan seterusnya ialah +12. Maka 30 + 12 = 42.", catName: "Matematik" },
+          { q: "Apakah nombor seterusnya dalam pola 1, 1, 2, 3, 5, 8, ...?", options: ["11", "12", "13", "15"], answer: 2, explanation: "Setiap nombor selepas dua nombor pertama ialah hasil tambah dua nombor sebelumnya. 5 + 8 = 13.", catName: "Matematik" },
+          { q: "Berapakah bilangan nombor dari 1 hingga 20 yang boleh dibahagi tepat dengan 2 atau 3?", options: ["10", "11", "12", "13"], answer: 3, explanation: "Terdapat 10 gandaan 2 dan 6 gandaan 3. Tiga nombor, iaitu 6, 12 dan 18, dikira dalam kedua-dua kumpulan. Maka jumlah unik ialah 10 + 6 − 3 = 13.", catName: "Matematik" },
+          {
+            q: "Seekor katak bermula pada kedudukan 0. Setiap lompatan membawanya 3 unit ke hadapan. Selepas setiap lompatan, jika kedudukannya masih kurang daripada 10, katak tergelincir 1 unit ke belakang. Berapakah bilangan lompatan minimum untuk mencapai atau melepasi kedudukan 10?",
+            options: ["4", "5", "6", "7"],
+            answer: 1,
+            explanation: "Selepas lompatan pertama hingga keempat, kedudukan akhir masing-masing ialah 2, 4, 6 dan 8. Lompatan kelima membawa katak dari kedudukan 8 ke kedudukan 11. Oleh itu, 5 lompatan diperlukan.",
+            catName: "Matematik"
+          },
+          { q: "Berapakah sudut terkecil antara jarum jam dan jarum minit pada pukul 3:30?", options: ["60°", "75°", "90°", "105°"], answer: 1, explanation: "Pada 3:30, jarum minit berada pada 180°. Jarum jam berada pada 105°. Bezanya ialah 180° − 105° = 75°.", catName: "Matematik" },
+          { q: "Sebuah beg mengandungi guli merah, biru dan hijau. Terdapat sekurang-kurangnya dua guli bagi setiap warna. Berapakah bilangan minimum guli yang perlu diambil tanpa melihat untuk memastikan sekurang-kurangnya dua guli mempunyai warna yang sama?", options: ["2", "3", "4", "5"], answer: 2, explanation: "Dalam keadaan paling buruk, tiga guli pertama masing-masing berlainan warna. Guli keempat pasti sewarna dengan sekurang-kurangnya satu guli yang telah diambil.", catName: "Matematik" },
+          { q: "Empat orang murid berjabat tangan sekali dengan setiap murid lain. Tiada pasangan berjabat tangan lebih daripada sekali. Berapakah jumlah jabat tangan?", options: ["4", "5", "6", "8"], answer: 2, explanation: "Setiap pasangan berjabat tangan sekali. Bilangan pasangan ialah 4 × 3 ÷ 2 = 6.", catName: "Matematik" },
+          { q: "Sebuah grid terdiri daripada 2 baris dan 2 lajur petak sama besar. Berapakah jumlah semua petak yang boleh dilihat, termasuk petak besar yang terbentuk daripada empat petak kecil?", options: ["4", "5", "6", "8"], answer: 1, explanation: "Terdapat 4 petak kecil dan 1 petak besar. Jumlahnya ialah 5 petak.", catName: "Matematik" },
+          { q: "Berapa banyak nombor dua digit boleh dibentuk menggunakan digit 1, 2, 3 dan 4 tanpa mengulangi digit yang sama dalam satu nombor?", options: ["8", "10", "12", "16"], answer: 2, explanation: "Terdapat 4 pilihan untuk digit puluh dan 3 pilihan untuk digit sa. Jumlahnya ialah 4 × 3 = 12 nombor.", catName: "Matematik" },
+          { q: "Berapakah bilangan gandaan 7 dari 1 hingga 100?", options: ["12", "13", "14", "15"], answer: 2, explanation: "Gandaan terakhir 7 yang tidak melebihi 100 ialah 98. Oleh sebab 98 ÷ 7 = 14, terdapat 14 gandaan.", catName: "Matematik" },
+          { q: "Sebuah grid berbentuk segi empat sama dibahagikan kepada 3 baris dan 3 lajur petak kecil yang sama saiz. Berapakah jumlah semua petak sama ada kecil atau besar yang boleh dibentuk?", options: ["9", "10", "13", "14"], answer: 3, explanation: "Terdapat 9 petak bersaiz 1 × 1, 4 petak bersaiz 2 × 2 dan 1 petak bersaiz 3 × 3. Jumlahnya ialah 9 + 4 + 1 = 14.", catName: "Matematik" },
+          { q: "Sebuah nombor genap lebih besar daripada 30 tetapi lebih kecil daripada 40. Jumlah digitnya ialah 9. Apakah nombor itu?", options: ["32", "34", "36", "38"], answer: 2, explanation: "Nombor genap antara 31 hingga 39 ialah 32, 34, 36 dan 38. Hanya 36 mempunyai jumlah digit 3 + 6 = 9.", catName: "Matematik" },
+          { q: "Lima mesin yang sama menghasilkan 5 barang dalam masa 5 minit. Setiap mesin menghasilkan satu barang dalam tempoh 5 minit itu. Berapa banyak barang boleh dihasilkan oleh 100 mesin dalam masa 5 minit?", options: ["20", "100", "200", "500"], answer: 1, explanation: "Setiap mesin menghasilkan satu barang dalam masa 5 minit. Oleh itu, 100 mesin menghasilkan 100 barang dalam masa 5 minit.", catName: "Matematik" }
+        ];
+
+        // Data Soalan Sains
+        const sains = [
+          { q: "Apakah unit asas SI bagi panjang?", options: ["Sentimeter", "Meter", "Kilometer", "Milimeter"], answer: 1, explanation: "Unit asas SI bagi panjang ialah meter.", catName: "Sains" },
+          { q: "Yang manakah sumber tenaga boleh baharu?", options: ["Arang batu", "Petroleum", "Gas asli", "Cahaya matahari"], answer: 3, explanation: "Cahaya matahari ialah sumber tenaga boleh baharu.", catName: "Sains" },
+          { q: "Apakah fungsi utama akar tumbuhan?", options: ["Menyerap air dan garam mineral", "Menghasilkan biji benih", "Menarik serangga", "Menyerap cahaya"], answer: 0, explanation: "Akar menyerap air dan garam mineral serta mencengkam tumbuhan pada tanah.", catName: "Sains" },
+          { q: "Gas apakah yang diperlukan manusia untuk respirasi?", options: ["Karbon dioksida", "Nitrogen", "Oksigen", "Hidrogen"], answer: 2, explanation: "Oksigen digunakan dalam respirasi untuk membebaskan tenaga.", catName: "Sains" },
+          { q: "Apakah yang berlaku apabila air mendidih?", options: ["Membeku", "Cecair berubah menjadi gas", "Gas berubah menjadi cecair", "Menjadi pepejal"], answer: 1, explanation: "Pendidihan ialah perubahan cecair kepada gas.", catName: "Sains" },
+          { q: "Yang manakah pengalir haba yang baik?", options: ["Kayu", "Plastik", "Getah", "Aluminium"], answer: 3, explanation: "Aluminium ialah logam dan pengalir haba yang baik.", catName: "Sains" },
+          { q: "Mengapakah pemegang periuk sering dibuat daripada bahan penebat haba?", options: ["Menambah berat", "Mengalirkan haba ke tangan", "Mengurangkan pemindahan haba ke tangan", "Menghasilkan haba"], answer: 2, explanation: "Penebat haba membantu mengurangkan pemindahan haba ke tangan.", catName: "Sains" },
+          { q: "Apakah sumber tenaga utama bagi kebanyakan rantai makanan?", options: ["Tanah", "Matahari", "Angin", "Air laut"], answer: 1, explanation: "Tumbuhan menggunakan tenaga cahaya matahari untuk fotosintesis.", catName: "Sains" },
+          { q: "Dalam rantai makanan rumput → belalang → katak → ular, apakah pengguna pertama?", options: ["Rumput", "Belalang", "Katak", "Ular"], answer: 1, explanation: "Belalang memakan rumput, iaitu pengeluar.", catName: "Sains" },
+          { q: "Organ manakah mengepam darah ke seluruh badan?", options: ["Paru-paru", "Perut", "Jantung", "Buah pinggang"], answer: 2, explanation: "Jantung mengepam darah melalui sistem peredaran darah.", catName: "Sains" },
+          { q: "Apakah fungsi utama paru-paru?", options: ["Mencerna makanan", "Pertukaran gas", "Menghasilkan air kencing", "Mengepam darah"], answer: 1, explanation: "Paru-paru membolehkan oksigen masuk ke darah dan karbon dioksida disingkirkan.", catName: "Sains" },
+          { q: "Amalan manakah membantu mencegah penyebaran penyakit berjangkit?", options: ["Berkongsi tuala", "Tidak menutup mulut ketika batuk", "Mencuci tangan dengan sabun", "Berkongsi botol minuman"], answer: 2, explanation: "Mencuci tangan membantu menyingkirkan kuman.", catName: "Sains" },
+          { q: "Apakah yang diperlukan untuk fotosintesis?", options: ["Cahaya, air dan karbon dioksida", "Oksigen sahaja", "Tanah dan oksigen sahaja", "Nitrogen dan hidrogen sahaja"], answer: 0, explanation: "Tumbuhan menggunakan cahaya, air dan karbon dioksida untuk fotosintesis.", catName: "Sains" },
+          { q: "Bagaimanakah bayang-bayang terbentuk?", options: ["Cahaya menembusi semua objek", "Objek legap menghalang cahaya", "Bunyi dipantulkan", "Udara menjadi sejuk"], answer: 1, explanation: "Objek legap menghalang cahaya lalu menghasilkan bayang-bayang.", catName: "Sains" },
+          { q: "Apakah yang biasanya berlaku kepada bayang-bayang pada skrin apabila objek didekatkan kepada sumber cahaya?", options: ["Menjadi lebih besar", "Sentiasa hilang", "Menjadi lebih kecil", "Tidak pernah berubah"], answer: 0, explanation: "Dalam susunan biasa, objek yang lebih dekat kepada sumber menghasilkan bayang-bayang lebih besar.", catName: "Sains" },
+          { q: "Apakah yang diperlukan untuk menyalakan mentol dalam litar ringkas?", options: ["Wayar terputus", "Litar lengkap dan sumber kuasa", "Suis terbuka sahaja", "Mentol tanpa bateri"], answer: 1, explanation: "Arus mengalir apabila litar lengkap dan mempunyai sumber kuasa.", catName: "Sains" },
+          { q: "Dalam litar bersiri, apakah yang berlaku jika satu mentol ditanggalkan?", options: ["Kedua-dua mentol terus menyala", "Mentol lain pasti lebih terang", "Litar terputus dan mentol lain padam", "Bateri bertambah tenaga"], answer: 2, explanation: "Menanggalkan satu mentol memutuskan litar bersiri.", catName: "Sains" },
+          { q: "Daya apakah yang menarik objek ke arah Bumi?", options: ["Magnet", "Graviti", "Apungan sahaja", "Elektrik"], answer: 1, explanation: "Graviti menarik objek ke arah Bumi.", catName: "Sains" },
+          { q: "Apakah yang biasanya berlaku kepada geseran apabila permukaan menjadi lebih kasar?", options: ["Meningkat", "Menjadi sifar", "Hilang", "Tidak mungkin berubah"], answer: 0, explanation: "Permukaan lebih kasar biasanya menghasilkan geseran lebih besar.", catName: "Sains" },
+          { q: "Apakah kegunaan gear pada basikal?", options: ["Menghasilkan air", "Mengubah hubungan daya dan kelajuan putaran", "Menghapuskan graviti", "Menukar bunyi kepada cahaya"], answer: 1, explanation: "Gear membantu menyesuaikan kayuhan dengan keadaan perjalanan.", catName: "Sains" },
+          { q: "Mengapakah Bulan kelihatan bercahaya?", options: ["Menghasilkan cahaya sendiri", "Memantulkan cahaya Matahari", "Membakar gas", "Menyerap semua cahaya"], answer: 1, explanation: "Bulan memantulkan cahaya Matahari.", catName: "Sains" },
+          { q: "Apakah punca utama kejadian siang dan malam?", options: ["Bumi berputar pada paksinya", "Bulan mengelilingi Bumi", "Bumi berhenti bergerak", "Matahari mengelilingi Bumi setiap hari"], answer: 0, explanation: "Putaran Bumi pada paksinya menyebabkan siang dan malam.", catName: "Sains" },
+          { q: "Planet manakah paling hampir dengan Matahari?", options: ["Zuhrah", "Bumi", "Marikh", "Utarid"], answer: 3, explanation: "Utarid ialah planet paling hampir dengan Matahari.", catName: "Sains" },
+          { q: "Yang manakah contoh perubahan fizikal?", options: ["Besi berkarat", "Kayu terbakar", "Ais mencair", "Makanan mereput"], answer: 2, explanation: "Ais mencair hanya mengubah keadaan jirim.", catName: "Sains" },
+          { q: "Mengapakah minyak biasanya terapung di atas air?", options: ["Minyak larut sepenuhnya", "Minyak tidak bercampur sepenuhnya dan kurang tumpat", "Air menjadi gas", "Minyak menjadi pepejal"], answer: 1, explanation: "Minyak biasanya kurang tumpat daripada air dan tidak bercampur sepenuhnya.", catName: "Sains" },
+          { q: "Kaedah manakah sesuai untuk mengasingkan pasir daripada air?", options: ["Penurasan", "Penyejatan sahaja", "Penyulingan minyak", "Magnet"], answer: 0, explanation: "Penurasan memisahkan pepejal tidak larut daripada cecair.", catName: "Sains" },
+          { q: "Apakah maksud habitat?", options: ["Cara haiwan bergerak", "Tempat organisma hidup", "Proses membuat makanan", "Perubahan bentuk bahan"], answer: 1, explanation: "Habitat ialah tempat organisma hidup.", catName: "Sains" },
+          { q: "Apakah peranan pengurai dalam ekosistem?", options: ["Menghasilkan cahaya", "Menguraikan organisma mati dan mengitar semula nutrien", "Menghentikan rantai makanan", "Menghapuskan air"], answer: 1, explanation: "Pengurai mengembalikan nutrien kepada persekitaran.", catName: "Sains" },
+          { q: "Mengapakah kitar semula penting?", options: ["Menambah sampah", "Meningkatkan pembaziran", "Mengurangkan sisa dan penggunaan sumber baharu", "Menghapuskan keperluan menjaga alam"], answer: 2, explanation: "Kitar semula mengurangkan sisa dan menjimatkan sumber.", catName: "Sains" },
+          { q: "Murid menguji kesan jumlah cahaya terhadap pertumbuhan anak pokok. Apakah ujian yang adil?", options: ["Menggunakan jenis tumbuhan berbeza", "Mengubah cahaya, air dan tanah serentak", "Menggunakan anak pokok serupa dan mengubah cahaya sahaja", "Tidak mengukur pertumbuhan"], answer: 2, explanation: "Ubah satu pemboleh ubah dan kawal faktor lain.", catName: "Sains" }
+        ];
+
+        // Data Soalan Bahasa Melayu
+        const bahasaMelayu = [
+          { q: "Adik berasa ______ kerana berjaya menjawab semua soalan dengan betul.", options: ["kecewa", "bangga", "cemas", "marah"], answer: 1, explanation: "Bangga menggambarkan perasaan gembira atas kejayaan.", catName: "Bahasa Melayu" },
+          { q: "Hadiah itu diberikan ______ pemenang pertandingan.", options: ["daripada", "kepada", "dari", "oleh"], answer: 1, explanation: "Kepada digunakan untuk penerima.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat yang menggunakan imbuhan dengan betul.", options: ["Mereka memperbesar kawasan taman itu.", "Ibu menggorengkan nasi di dapur.", "Adik mempersapu lantai.", "Ayah menulisan surat."], answer: 0, explanation: "Memperbesar ialah bentuk yang betul.", catName: "Bahasa Melayu" },
+          { q: "Apakah sinonim bagi gigih?", options: ["Malas", "Tekun", "Lemah", "Cuai"], answer: 1, explanation: "Gigih bermaksud tekun dan bersungguh-sungguh.", catName: "Bahasa Melayu" },
+          { q: "Apakah antonim bagi sementara dalam konteks sesuatu yang tidak kekal?", options: ["Singkat", "Sebentar", "Kekal", "Sejenak"], answer: 2, explanation: "Kekal berlawanan dengan sementara.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat yang betul.", options: ["Para-para peserta sedang beratur.", "Semua murid-murid hadir awal.", "Para peserta sedang beratur.", "Banyak buku-buku disusun di rak."], answer: 2, explanation: "Para sudah menunjukkan jamak.", catName: "Bahasa Melayu" },
+          { q: "Se______ pisang diletakkan di atas meja.", options: ["utas", "sisir", "keping", "batang"], answer: 1, explanation: "Sisir ialah penjodoh bilangan bagi pisang.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat yang menggunakan perkataan 'mengambil berat' dengan betul.", options: ["Ali mengambil berat itu lalu meletakkannya di atas meja.", "Ibu mengambil berat tentang pelajaran anak-anaknya.", "Ayah mengambil berat beg yang tertinggal di dalam kereta.", "Adik mengambil berat kasut baharunya ke sekolah."], answer: 1, explanation: "Mengambil berat bermaksud prihatin atau memberi perhatian yang serius.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat yang menggunakan tanda baca dengan betul.", options: ["\"Bilakah kamu akan pulang?\" tanya ibu.", "\"Bilakah kamu akan pulang\"? tanya ibu.", "Bilakah kamu akan pulang?\" tanya ibu.", "\"Bilakah kamu akan pulang? tanya ibu."], answer: 0, explanation: "Tanda petik mengapit dialog dan tanda soal berada di dalamnya.", catName: "Bahasa Melayu" },
+          { q: "Farah mengulang kaji pelajaran ______ mendapat keputusan cemerlang.", options: ["tetapi", "supaya", "walaupun", "sementara"], answer: 1, explanation: "Supaya menunjukkan tujuan.", catName: "Bahasa Melayu" },
+          { q: "Apakah maksud peribahasa 'bagai mencurah air ke daun keladi'?", options: ["Memberikan bantuan kepada orang yang memerlukan", "Melakukan sesuatu pekerjaan dengan tergesa-gesa", "Memberikan nasihat yang tidak diendahkan oleh orang yang menerimanya", "Menyembunyikan kesalahan daripada pengetahuan orang lain"], answer: 2, explanation: "Peribahasa ini bermaksud nasihat atau ajaran yang diberikan tidak memberi kesan kerana tidak diendahkan.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat pasif bagi 'Kakak menyiram pokok bunga itu.'", options: ["Pokok bunga itu menyiram kakak.", "Kakak disiram oleh pokok bunga itu.", "Pokok bunga itu disiram oleh kakak.", "Disiram pokok bunga kakak itu."], answer: 2, explanation: "Objek ayat aktif menjadi subjek ayat pasif.", catName: "Bahasa Melayu" },
+          { q: "Para sukarelawan ______ mangsa banjir.", options: ["membantu", "bantuan", "dibantu oleh mereka membantu", "pertolongan kepada"], answer: 0, explanation: "Membantu ialah kata kerja yang sesuai.", catName: "Bahasa Melayu" },
+          { q: "Kanak-kanak itu bermain ______ di taman.", options: ["kejar-kejaran", "berkejaran-kejaran", "kejar-mengejaran", "mengejar-ngejaran"], answer: 0, explanation: "Kejar-kejaran ialah bentuk yang sesuai untuk melengkapkan ayat tersebut.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat yang betul dari segi kata pemeri.", options: ["Rumah itu adalah besar.", "Nama adik saya ialah Amir.", "Dia ialah sangat rajin.", "Tujuan mesyuarat itu adalah perbincangan masalah."], answer: 1, explanation: "Ialah digunakan sebelum frasa nama.", catName: "Bahasa Melayu" },
+          { q: "______ murid menyertai lawatan itu, iaitu seramai 35 orang.", options: ["Sebahagian", "Semua", "Setiap", "Kedua-dua"], answer: 1, explanation: "Semua merujuk keseluruhan kumpulan.", catName: "Bahasa Melayu" },
+          { q: "Apakah maksud lestari?", options: ["Mudah musnah", "Terpelihara dan berterusan", "Sangat mahal", "Tidak berguna"], answer: 1, explanation: "Lestari merujuk sesuatu yang dapat dikekalkan dan dipelihara.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat yang menggunakan kata sendi nama dengan betul.", options: ["Dia berasal daripada Johor.", "Buku itu ada di atas meja.", "Mereka pergi daripada sekolah ke padang.", "Hadiah itu dari adik kepada kakak."], answer: 1, explanation: "Di digunakan untuk menunjukkan tempat.", catName: "Bahasa Melayu" },
+          { q: "Pihak sekolah akan ______ pertandingan pidato minggu hadapan.", options: ["menganjurkan", "anjurkan oleh", "penganjur", "teranjur"], answer: 0, explanation: "Menganjurkan ialah kata kerja yang tepat.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat yang sama maksud dengan 'Walaupun hujan lebat, mereka tetap meneruskan perjalanan.'", options: ["Mereka berhenti kerana hujan lebat.", "Mereka meneruskan perjalanan meskipun hujan lebat.", "Mereka berjalan selepas hujan berhenti.", "Hujan menyebabkan mereka pulang."], answer: 1, explanation: "Meskipun membawa maksud yang sama dengan walaupun.", catName: "Bahasa Melayu" },
+          { q: "Kenal pasti kata adjektif: Air sungai itu sangat jernih selepas hujan berhenti.", options: ["Air", "Sungai", "Sangat", "Jernih"], answer: 3, explanation: "Jernih menerangkan keadaan air.", catName: "Bahasa Melayu" },
+          { q: "Kenal pasti kata kerja transitif: Siti membaca novel di perpustakaan.", options: ["Siti", "Membaca", "Novel", "Perpustakaan"], answer: 1, explanation: "Membaca ialah kata kerja transitif yang menerima objek novel.", catName: "Bahasa Melayu" },
+          { q: "Apakah maksud ukur baju di badan sendiri?", options: ["Membeli pakaian mahal", "Bertindak mengikut kemampuan diri", "Meniru semua orang", "Mengutamakan pendapat orang lain"], answer: 1, explanation: "Kita perlu mengukur kemampuan sendiri.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat yang betul.", options: ["Kerana sakit, maka dia tidak hadir.", "Dia tidak hadir kerana sakit.", "Dia kerana sakit tidak hadir kerana.", "Sakit kerana dia tidak hadir maka."], answer: 1, explanation: "Ayat ini mempunyai susunan yang gramatis.", catName: "Bahasa Melayu" },
+          { q: "Pilih kata majmuk mantap yang dieja dengan betul.", options: ["kerjasama", "alatulis", "tengahari", "warga negara"], answer: 0, explanation: "Kerjasama ialah kata majmuk mantap yang dieja sebagai satu perkataan.", catName: "Bahasa Melayu" },
+          { q: "Apakah antonim bagi teliti?", options: ["Cermat", "Rapi", "Cuai", "Tekun"], answer: 2, explanation: "Cuai bermaksud tidak berhati-hati.", catName: "Bahasa Melayu" },
+          { q: "\"Bolehkah ______ membantu saya mengangkat kotak ini?\" tanya Amir kepada rakannya.", options: ["kamu", "beliau", "baginda", "mereka"], answer: 0, explanation: "Kamu sesuai untuk bercakap dengan seorang rakan.", catName: "Bahasa Melayu" },
+          { q: "Pilih ayat yang menggunakan koma dengan betul.", options: ["Ibu membeli ikan ayam, sayur dan buah.", "Ibu membeli ikan, ayam, sayur dan buah.", "Ibu, membeli ikan ayam sayur, dan buah.", "Ibu membeli, ikan, ayam sayur dan buah."], answer: 1, explanation: "Koma memisahkan item dalam senarai.", catName: "Bahasa Melayu" },
+          { q: "Apakah maksud ringan tulang?", options: ["Mudah cedera", "Rajin bekerja atau membantu", "Tidak kuat mengangkat barang", "Suka tidur"], answer: 1, explanation: "Ringan tulang bermaksud rajin bekerja atau membantu.", catName: "Bahasa Melayu" },
+          { q: "Petikan: Amira membawa botol air dan bekas makanan guna semula ke sekolah bagi mengurangkan plastik sekali guna. Apakah tujuan Amira membawa bekas sendiri?", options: ["Menambah sampah", "Mengurangkan penggunaan plastik sekali guna", "Menjadikan beg lebih berat", "Mengelakkan diri daripada belajar"], answer: 1, explanation: "Bekas guna semula membantu mengurangkan plastik sekali guna.", catName: "Bahasa Melayu" }
+        ];
+
+        // 80 Pernyataan Keperibadian
+        const personalitiRaw = [
+            // Openness (Keterbukaan) - 16 item
+            { q: "Saya suka meneroka idea baharu dan konsep yang mencabar minda.", dimension: 0 },
+            { q: "Saya berminat untuk mempelajari pelbagai subjek di luar silibus sekolah.", dimension: 0 },
+            { q: "Saya menghargai seni, muzik, dan aktiviti kreatif.", dimension: 0 },
+            { q: "Saya terbuka kepada pandangan yang berbeza daripada cara berfikir saya.", dimension: 0 },
+            { q: "Saya suka mencari cara kreatif untuk menyelesaikan masalah.", dimension: 0 },
+            { q: "Saya mudah bosan dengan rutin harian yang sentiasa berulang tanpa pembaharuan.", dimension: 0 },
+            { q: "Saya sering berimaginasi dan memikirkan kemungkinan masa depan.", dimension: 0 },
+            { q: "Saya suka membaca buku atau artikel mengenai topik sains dan penemuan baharu.", dimension: 0 },
+            { q: "Saya bersedia mencuba kaedah pembelajaran yang belum pernah saya guna sebelum ini.", dimension: 0 },
+            { q: "Saya gemar merancang projek inovatif atau eksperimen sendiri.", dimension: 0 },
+            { q: "Saya mempunyai rasa ingin tahu yang tinggi terhadap fenomena sekeliling.", dimension: 0 },
+            { q: "Saya menghargai perbincangan falsafah atau isu-isu global yang mendalam.", dimension: 0 },
+            { q: "Saya cepat menyesuaikan diri apabila berhadapan dengan konsep atau teknologi baharu.", dimension: 0 },
+            { q: "Saya melihat kegagalan sebagai peluang untuk mencuba pendekatan yang lain.", dimension: 0 },
+            { q: "Saya mudah terpesona dengan keindahan alam semula jadi dan keunikan budaya.", dimension: 0 },
+            { q: "Saya gemar menyertai aktiviti perkhemahan atau ekspedisi luar bilik darjah.", dimension: 0 },
+
+            // Conscientiousness (Kesedaran / Ketekunan) - 16 item
+            { q: "Saya menyiapkan tugasan sekolah mengikut jadual masa yang ditetapkan.", dimension: 1 },
+            { q: "Saya menyemak semula jawapan kerja sekolah sebelum menyerahkannya kepada guru.", dimension: 1 },
+            { q: "Saya menyimpan dan menguruskan nota pembelajaran dengan kemas dan teratur.", dimension: 1 },
+            { q: "Saya sentiasa menepati masa dalam menghadiri kelas atau perjumpaan.", dimension: 1 },
+            { q: "Saya mempunyai matlamat akademik yang jelas dan berusaha bersungguh-sungguh mencapainya.", dimension: 1 },
+            { q: "Saya tidak suka menangguhkan kerja sekolah ke saat-saat akhir.", dimension: 1 },
+            { q: "Saya bertanggungjawab sepenuhnya terhadap tugasan kumpulan yang diamanahkan kepada saya.", dimension: 1 },
+            { q: "Saya mengutamakan kerja penting sebelum melakukan aktiviti santai.", dimension: 1 },
+            { q: "Saya sentiasa memastikan bilik darjah atau ruang belajar berada dalam keadaan kemas.", dimension: 1 },
+            { q: "Saya berusaha gigih untuk menyiapkan tugasan walaupun subjek tersebut sukar.", dimension: 1 },
+            { q: "Saya merancang jadual belajar harian secara sistematik.", dimension: 1 },
+            { q: "Saya mematuhi segala peraturan sekolah tanpa perlu diingatkan berkali-kali.", dimension: 1 },
+            { q: "Saya membawa semua buku teks dan peralatan tulis yang diperlukan ke sekolah.", dimension: 1 },
+            { q: "Saya meneliti setiap arahan tugasan secara terperinci sebelum mula menjawab.", dimension: 1 },
+            { q: "Saya komited untuk menghabiskan setiap buku rujukan yang telah saya mula baca.", dimension: 1 },
+            { q: "Saya memastikan setiap kerja yang saya hasilkan menepati kualiti terbaik.", dimension: 1 },
+
+            // Extraversion (Ekstroversi) - 16 item
+            { q: "Saya berasa bertenaga apabila dikelilingi oleh ramai rakan dan berinteraksi.", dimension: 2 },
+            { q: "Saya suka memulakan perbualan dengan rakan baharu di sekolah.", dimension: 2 },
+            { q: "Saya selesa menjadi ketua kumpulan dalam aktiviti perbincangan kelas.", dimension: 2 },
+            { q: "Saya suka menyuarakan pendapat secara terbuka di hadapan khalayak ramai.", dimension: 2 },
+            { q: "Saya aktif menyertai aktiviti kokurikulum dan sukan berpasukan.", dimension: 2 },
+            { q: "Saya mudah menceriakan suasana apabila berada dalam kalangan rakan-rakan.", dimension: 2 },
+            { q: "Saya gemar menghadiri majlis sosial atau perhimpunan sekolah.", dimension: 2 },
+            { q: "Saya berasa selesa bercakap di pentas atau menyampaikan ucapan.", dimension: 2 },
+            { q: "Saya mempunyai ramai rakan rapat dan mudah membina hubungan mesra.", dimension: 2 },
+            { q: "Saya lebih suka bekerja dalam kumpulan berbanding bekerja seorang diri.", dimension: 2 },
+            { q: "Saya ekspresif dalam melahirkan perasaan gembira atau teruja.", dimension: 2 },
+            { q: "Saya bersemangat menyertai pertandingan pidato, bahas atau debat.", dimension: 2 },
+            { q: "Saya mengambil inisiatif untuk mengenalkan diri kepada murid baharu.", dimension: 2 },
+            { q: "Saya jarang berasa segan silu apabila berurusan dengan tetamu luar.", dimension: 2 },
+            { q: "Saya menikmati perhatian positif apabila sumbangan saya dihargai.", dimension: 2 },
+            { q: "Saya ceria dan aktif dalam aktiviti sukaneka atau persembahan pentas.", dimension: 2 },
+
+            // Agreeableness (Kesepakatan / Kesiapan Kerjasama) - 16 item
+            { q: "Saya suka membantu rakan sekelas yang menghadapi kesukaran dalam pelajaran.", dimension: 3 },
+            { q: "Saya menghormati pandangan rakan walaupun saya mempunyai pendirian berbeza.", dimension: 3 },
+            { q: "Saya mudah memaafkan kesilapan kecil yang dilakukan oleh rakan kepada saya.", dimension: 3 },
+            { q: "Saya mengutamakan keharmonian kumpulan berbanding kepentingan peribadi.", dimension: 3 },
+            { q: "Saya mendengar dengan penuh perhatian apabila orang lain sedang bercakap.", dimension: 3 },
+            { q: "Saya bersikap jujur, amanah, dan disenangi oleh guru serta rakan.", dimension: 3 },
+            { q: "Saya tidak suka memulakan permusuhan atau pertengkaran di sekolah.", dimension: 3 },
+            { q: "Saya berkongsi nota belajar dan alat tulis dengan rakan yang memerlukan.", dimension: 3 },
+            { q: "Saya menerima keputusan majoriti kumpulan dengan hati terbuka.", dimension: 3 },
+            { q: "Saya menunjukkan empati yang tinggi apabila melihat rakan sedang bersedih.", dimension: 3 },
+            { q: "Saya sentiasa beradab sopan dan bertutur kata lembut dengan semua orang.", dimension: 3 },
+            { q: "Saya menyokong usaha kejayaan rakan sepasukan tanpa perasaan dengki.", dimension: 3 },
+            { q: "Saya bersedia bertolak ansur demi kepentingan bersama.", dimension: 3 },
+            { q: "Saya menghargai sumbangan setiap ahli dalam kejayaan kumpulan.", dimension: 3 },
+            { q: "Saya menolak sebarang bentuk buli atau penindasan di sekolah.", dimension: 3 },
+            { q: "Saya mudah mempercayai kebaikan yang ada pada diri orang lain.", dimension: 3 },
+
+            // Neuroticism (Kestabilan Emosi / Keresahan) - 16 item
+            { q: "Saya cepat merasa cemas apabila menghadapi peperiksaan besar seperti UKKM.", dimension: 4 },
+            { q: "Saya mudah tertekan apabila tugasan bertumpuk dalam masa yang sama.", dimension: 4 },
+            { q: "Perasaan saya mudah terganggu apabila dikritik oleh orang lain.", dimension: 4 },
+            { q: "Saya sering bimbang tentang keputusan peperiksaan sebelum ia diumumkan.", dimension: 4 },
+            { q: "Saya sukar melelapkan malam sebelum hari-hari penting.", dimension: 4 },
+            { q: "Saya mudah merasa panik apabila rancangan asal saya tiba-tiba berubah.", dimension: 4 },
+            { q: "Mood saya boleh berubah dengan ketara dalam tempoh masa yang singkat.", dimension: 4 },
+            { q: "Saya sering merasa kurang yakin dengan kebolehan diri sendiri.", dimension: 4 },
+            { q: "Saya mengambil masa yang lama untuk tenang selepas menghadapi kegagalan.", dimension: 4 },
+            { q: "Saya merasa terbeban dengan jangkaan tinggi daripada ibu bapa dan guru.", dimension: 4 },
+            { q: "Saya cepat merasa kecewa jika keputusan saya tidak sehebat rakan lain.", dimension: 4 },
+            { q: "Saya sering membayangkan senario buruk yang mungkin berlaku pada masa depan.", dimension: 4 },
+            { q: "Jantung saya berdegup kencang apabila nama dipanggil untuk menjawab soalan.", dimension: 4 },
+            { q: "Saya mudah merasa letih mental akibat tekanan emosi harian.", dimension: 4 },
+            { q: "Saya merasa serba salah yang berpanjangan apabila melakukan kesilapan kecil.", dimension: 4 },
+            { q: "Saya memerlukan sokongan emosi yang kerap untuk terus bersemangat.", dimension: 4 }
+        ];
+
+        const personaliti = personalitiRaw.map((item) => ({
+          q: item.q,
+          options: ["Sangat setuju", "Setuju", "Tidak setuju", "Sangat tidak setuju"],
+          isPersonality: true,
+          dimension: item.dimension,
+          catName: "Keperibadian"
+        }));
+
+        // State Pengurusan Kuiz
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+        let bookmarks = [];
+        let timerInterval = null;
+        let currentQuizType = '';
+        let activeSubjectTab = 0; 
+        let submitActionType = 'home';
+
+        // Penyimpanan masa berasingan bagi setiap subjek dalam saat (seconds)
+        let subjectTimeLefts = {};
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function startQuiz(type) {
+            currentQuizType = type;
+            activeSubjectTab = 0;
+
+            if (type === 'matematik') {
+                currentQuestions = shuffleArray(matematik).map(q => ({...q, catName: "Matematik"}));
+                subjectTimeLefts = { "Matematik": 30 * 60 };
+            } else if (type === 'sains') {
+                currentQuestions = shuffleArray(sains).map(q => ({...q, catName: "Sains"}));
+                subjectTimeLefts = { "Sains": 35 * 60 };
+            } else if (type === 'bm') {
+                currentQuestions = shuffleArray(bahasaMelayu).map(q => ({...q, catName: "Bahasa Melayu"}));
+                subjectTimeLefts = { "Bahasa Melayu": 30 * 60 };
+            } else if (type === 'personaliti') {
+                currentQuestions = shuffleArray(personaliti).map(q => ({...q, catName: "Keperibadian"}));
+                subjectTimeLefts = { "Keperibadian": 30 * 60 };
+            } else if (type === 'mymrsm') {
+                currentQuestions = [
+                    ...shuffleArray(matematik).map(q => ({...q, catName: "Matematik"})),
+                    ...shuffleArray(sains).map(q => ({...q, catName: "Sains"})),
+                    ...shuffleArray(bahasaMelayu).map(q => ({...q, catName: "Bahasa Melayu"})),
+                    ...shuffleArray(personaliti).map(q => ({...q, catName: "Keperibadian"}))
+                ];
+                subjectTimeLefts = {
+                    "Matematik": 30 * 60,
+                    "Sains": 35 * 60,
+                    "Bahasa Melayu": 30 * 60,
+                    "Keperibadian": 30 * 60
+                };
+            } else if (type === 'spskt') {
+                currentQuestions = [
+                    ...shuffleArray(matematik).map(q => ({...q, catName: "Matematik"})),
+                    ...shuffleArray(sains).map(q => ({...q, catName: "Sains"})),
+                    ...shuffleArray(personaliti).map(q => ({...q, catName: "Keperibadian"}))
+                ];
+                subjectTimeLefts = {
+                    "Matematik": 30 * 60,
+                    "Sains": 35 * 60,
+                    "Keperibadian": 30 * 60
+                };
+            }
+
+            currentIndex = 0;
+            score = 0;
+            userAnswers = new Array(currentQuestions.length).fill(null);
+            bookmarks = new Array(currentQuestions.length).fill(false);
+
+            document.getElementById('screen-home').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+            document.getElementById('stats-header').classList.remove('hidden');
+
+            const hasOnlyPersonality = currentQuestions.every(q => q.isPersonality);
+            if (hasOnlyPersonality) {
+                document.getElementById('score-counter-wrap').style.display = 'none';
+            } else {
+                document.getElementById('score-counter-wrap').style.display = 'block';
+            }
+
+            setupSubjectTabs();
+            startTimer();
+            loadQuestion();
+        }
+
+        function getSubjectRanges(type) {
+            if (type === 'mymrsm') {
+                return [
+                    { name: "Matematik", start: 0, end: 29 },
+                    { name: "Sains", start: 30, end: 59 },
+                    { name: "Bahasa Melayu", start: 60, end: 89 },
+                    { name: "Keperibadian", start: 90, end: 169 }
+                ];
+            } else if (type === 'spskt') {
+                return [
+                    { name: "Matematik", start: 0, end: 29 },
+                    { name: "Sains", start: 30, end: 59 },
+                    { name: "Keperibadian", start: 60, end: 139 }
+                ];
+            }
+            return [];
+        }
+
+        function setupSubjectTabs() {
+            const tabsContainer = document.getElementById('subject-tabs-container');
+            const ranges = getSubjectRanges(currentQuizType);
+            
+            if (ranges.length > 0) {
+                tabsContainer.classList.remove('hidden');
+                tabsContainer.innerHTML = '';
+                ranges.forEach((range, idx) => {
+                    const btn = document.createElement('button');
+                    btn.id = `sub-tab-${idx}`;
+                    btn.className = `flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition text-center ${activeSubjectTab === idx ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'}`;
+                    btn.innerText = range.name;
+                    btn.onclick = () => {
+                        activeSubjectTab = idx;
+                        currentIndex = range.start;
+                        loadQuestion();
+                    };
+                    tabsContainer.appendChild(btn);
+                });
+            } else {
+                tabsContainer.classList.add('hidden');
+            }
+        }
+
+        function updateActiveSubjectTabByCurrentIndex() {
+            const ranges = getSubjectRanges(currentQuizType);
+            if (ranges.length > 0) {
+                for (let i = 0; i < ranges.length; i++) {
+                    if (currentIndex >= ranges[i].start && currentIndex <= ranges[i].end) {
+                        activeSubjectTab = i;
+                        break;
+                    }
+                }
+                const tabsContainer = document.getElementById('subject-tabs-container');
+                const buttons = tabsContainer.children;
+                for (let i = 0; i < buttons.length; i++) {
+                    if (i === activeSubjectTab) {
+                        buttons[i].className = "flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition text-center bg-blue-600 text-white shadow-sm";
+                    } else {
+                        buttons[i].className = "flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition text-center bg-white text-slate-700 hover:bg-slate-200 border border-slate-200";
+                    }
+                }
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                const currentQ = currentQuestions[currentIndex];
+                const subName = currentQ.catName || 'Matematik';
+
+                if (subjectTimeLefts[subName] !== undefined && subjectTimeLefts[subName] > 0) {
+                    subjectTimeLefts[subName]--;
+                }
+
+                updateTimerDisplay();
+
+                // Semak jika masa subjek semasa habis
+                if (subjectTimeLefts[subName] !== undefined && subjectTimeLefts[subName] <= 0) {
+                    // Jika ada subjek seterusnya dalam mod penuh, lompat ke subjek seterusnya atau tamat
+                    const ranges = getSubjectRanges(currentQuizType);
+                    if (ranges.length > 0 && activeSubjectTab < ranges.length - 1) {
+                        activeSubjectTab++;
+                        currentIndex = ranges[activeSubjectTab].start;
+                        loadQuestion();
+                    } else {
+                        clearInterval(timerInterval);
+                        finishQuiz();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const currentQ = currentQuestions[currentIndex];
+            const subName = currentQ ? (currentQ.catName || 'Matematik') : 'Matematik';
+            const timeLeft = subjectTimeLefts[subName] !== undefined ? subjectTimeLefts[subName] : 1800;
+
+            document.getElementById('subject-timer-label').innerText = `Masa (${subName})`;
+
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.floor((timeLeft % 3600) / 60);
+            const seconds = timeLeft % 60;
+            
+            if (hours > 0) {
+                document.getElementById('timer-display').innerText = 
+                    `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                document.getElementById('timer-display').innerText = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function buildNavGrid() {
+            const container = document.getElementById('nav-grid-container');
+            container.innerHTML = '';
+            
+            let questionsToDisplay = [];
+            const ranges = getSubjectRanges(currentQuizType);
+
+            if (ranges.length > 0) {
+                const range = ranges[activeSubjectTab];
+                for (let i = range.start; i <= range.end; i++) {
+                    questionsToDisplay.push({ originalIndex: i, questionNumber: i + 1 });
+                }
+            } else {
+                currentQuestions.forEach((_, idx) => {
+                    questionsToDisplay.push({ originalIndex: idx, questionNumber: idx + 1 });
+                });
+            }
+
+            questionsToDisplay.forEach((item) => {
+                const btn = document.createElement('button');
+                btn.id = `nav-btn-${item.originalIndex}`;
+                btn.className = `h-9 rounded-lg text-xs font-bold transition flex items-center justify-center border border-slate-200 bg-slate-100 text-slate-700`;
+                btn.innerText = item.questionNumber;
+                btn.onclick = () => {
+                    currentIndex = item.originalIndex;
+                    loadQuestion();
+                };
+                container.appendChild(btn);
+            });
+            updateNavGridUI();
+        }
+
+        function updateNavGridUI() {
+            let answeredCount = 0;
+            currentQuestions.forEach((_, idx) => {
+                if (userAnswers[idx] !== null) answeredCount++;
+            });
+            document.getElementById('answered-count-badge').innerText = `${answeredCount} / ${currentQuestions.length} Dijawab`;
+
+            let questionsToDisplay = [];
+            const ranges = getSubjectRanges(currentQuizType);
+            if (ranges.length > 0) {
+                const range = ranges[activeSubjectTab];
+                for (let i = range.start; i <= range.end; i++) {
+                    questionsToDisplay.push(i);
+                }
+            } else {
+                currentQuestions.forEach((_, idx) => {
+                    questionsToDisplay.push(idx);
+                });
+            }
+
+            questionsToDisplay.forEach((idx) => {
+                const btn = document.getElementById(`nav-btn-${idx}`);
+                if (!btn) return;
+
+                const isAnswered = userAnswers[idx] !== null;
+                const isBookmarked = bookmarks[idx];
+                const isCurrent = currentIndex === idx;
+
+                btn.className = `h-9 rounded-lg text-xs font-bold transition flex items-center justify-center border`;
+
+                if (isAnswered) {
+                    if (isBookmarked) {
+                        btn.className += ` bg-amber-400 text-slate-900 border-amber-500`;
+                    } else {
+                        btn.className += ` bg-emerald-500 text-white border-emerald-600`;
+                    }
+                } else {
+                    if (isBookmarked) {
+                        btn.className += ` bg-amber-100 text-amber-800 border-amber-300`;
+                    } else {
+                        btn.className += ` bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200`;
+                    }
+                }
+
+                if (isCurrent) {
+                    btn.className += ` ring-2 ring-blue-600 ring-offset-1`;
+                }
+            });
+        }
+
+        function toggleBookmark() {
+            bookmarks[currentIndex] = !bookmarks[currentIndex];
+            updateBookmarkUI();
+            updateNavGridUI();
+        }
+
+        function updateBookmarkUI() {
+            const isBookmarked = bookmarks[currentIndex];
+            const icon = document.getElementById('bookmark-icon');
+            const text = document.getElementById('bookmark-text');
+            const btn = document.getElementById('bookmark-btn');
+
+            if (isBookmarked) {
+                icon.className = "fa-solid fa-bookmark text-amber-500";
+                text.innerText = "Ditanda";
+                btn.className = "text-amber-600 bg-amber-50 hover:bg-amber-100 transition px-2.5 py-1 rounded-lg border border-amber-200 text-xs flex items-center gap-1.5 font-medium";
+            } else {
+                icon.className = "fa-regular fa-bookmark";
+                text.innerText = "Tanda";
+                btn.className = "text-slate-400 hover:text-amber-500 transition px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex items-center gap-1.5";
+            }
+        }
+
+        function loadQuestion() {
+            updateActiveSubjectTabByCurrentIndex();
+            buildNavGrid();
+            updateTimerDisplay();
+
+            const q = currentQuestions[currentIndex];
+            document.getElementById('question-progress').innerText = `Soalan ${currentIndex + 1} daripada ${currentQuestions.length}`;
+            document.getElementById('category-badge').innerText = q.catName || 'UKKM';
+            document.getElementById('question-text').innerText = q.q;
+
+            updateBookmarkUI();
+            updateNavGridUI();
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            const explanationBox = document.getElementById('explanation-box');
+            explanationBox.classList.add('hidden');
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-sm sm:text-base transition flex items-center justify-between group shadow-sm`;
+                btn.innerHTML = `<span><strong class="mr-2 text-slate-500">${String.fromCharCode(65 + idx)}.</strong> ${opt}</span>`;
+                
+                if (userAnswers[currentIndex] !== null) {
+                    if (!q.isPersonality) {
+                        btn.disabled = true;
+                        if (idx === q.answer) {
+                            btn.classList.remove('bg-slate-50', 'border-slate-200');
+                            btn.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-900');
+                        } else if (userAnswers[currentIndex] === idx) {
+                            btn.classList.remove('bg-slate-50', 'border-slate-200');
+                            btn.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-900');
+                        }
+                    } else {
+                        if (userAnswers[currentIndex] === idx) {
+                            btn.classList.remove('bg-slate-50', 'border-slate-200');
+                            btn.classList.add('bg-purple-50', 'border-purple-300', 'text-purple-900', 'font-medium');
+                        }
+                    }
+                }
+                
+                btn.onclick = () => selectAnswer(idx);
+                optionsContainer.appendChild(btn);
+            });
+
+            if (userAnswers[currentIndex] !== null && !q.isPersonality) {
+                showExplanation();
+            }
+
+            document.getElementById('btn-prev').style.visibility = currentIndex === 0 ? 'hidden' : 'visible';
+            document.getElementById('btn-next').innerText = currentIndex === currentQuestions.length - 1 ? 'Selesai Kuiz' : 'Seterusnya →';
+        }
+
+        function selectAnswer(selectedIndex) {
+            const q = currentQuestions[currentIndex];
+            userAnswers[currentIndex] = selectedIndex;
+            updateNavGridUI();
+
+            if (!q.isPersonality) {
+                let calculatedScore = 0;
+                for (let i = 0; i < currentQuestions.length; i++) {
+                    if (!currentQuestions[i].isPersonality && userAnswers[i] === currentQuestions[i].answer) {
+                        calculatedScore++;
+                    }
+                }
+                score = calculatedScore;
+                document.getElementById('header-score').innerText = score;
+
+                const buttons = document.getElementById('options-container').children;
+                for (let i = 0; i < buttons.length; i++) {
+                    buttons[i].disabled = true;
+                    if (i === q.answer) {
+                        buttons[i].classList.remove('bg-slate-50', 'border-slate-200');
+                        buttons[i].classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-900');
+                    } else if (i === selectedIndex) {
+                        buttons[i].classList.remove('bg-slate-50', 'border-slate-200');
+                        buttons[i].classList.add('bg-rose-50', 'border-rose-300', 'text-rose-900');
+                    }
+                }
+                showExplanation();
+            } else {
+                const buttons = document.getElementById('options-container').children;
+                for (let i = 0; i < buttons.length; i++) {
+                    buttons[i].classList.remove('bg-purple-50', 'border-purple-300', 'text-purple-900', 'font-medium');
+                    buttons[i].classList.add('bg-slate-50', 'border-slate-200', 'text-slate-800');
+                }
+                buttons[selectedIndex].classList.remove('bg-slate-50', 'border-slate-200', 'text-slate-800');
+                buttons[selectedIndex].classList.add('bg-purple-50', 'border-purple-300', 'text-purple-900', 'font-medium');
+            }
+        }
+
+        function showExplanation() {
+            const q = currentQuestions[currentIndex];
+            if (!q.isPersonality) {
+                document.getElementById('explanation-title').innerHTML = `<i class="fa-solid fa-circle-info text-blue-600"></i> Huraian Fakta:`;
+                document.getElementById('explanation-text').innerText = q.explanation;
+                document.getElementById('explanation-box').classList.remove('hidden');
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else {
+                confirmSubmitQuiz();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadQuestion();
+            }
+        }
+
+        function confirmChangeCategory() {
+            submitActionType = 'home';
+            document.getElementById('modal-title').innerText = "Kembali ke Pemilihan Kategori?";
+            document.getElementById('modal-desc').innerText = "Kuiz semasa anda akan ditamatkan.";
+            document.getElementById('modal-confirm-btn').className = "flex-1 bg-rose-600 hover:bg-rose-500 text-white py-2.5 rounded-xl text-sm font-semibold transition shadow-md";
+            document.getElementById('modal-confirm-btn').innerText = "Ya, Keluar";
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function confirmSubmitQuiz() {
+            submitActionType = 'submit';
+            const unanswered = userAnswers.filter(ans => ans === null).length;
+            document.getElementById('modal-title').innerText = "Hantar Jawapan Ujian?";
+            if (unanswered > 0) {
+                document.getElementById('modal-desc').innerText = `Anda masih mempunyai ${unanswered} soalan yang belum dijawab. Adakah anda pasti mahu menghantar ujian ini?`;
+            } else {
+                document.getElementById('modal-desc').innerText = "Tahniah! Anda telah menjawab semua soalan. Adakah anda pasti mahu menghantar sekarang?";
+            }
+            document.getElementById('modal-confirm-btn').className = "flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-sm font-semibold transition shadow-md";
+            document.getElementById('modal-confirm-btn').innerText = "Ya, Hantar";
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+        }
+
+        function executeReturnHome() {
+            closeConfirmModal();
+            if (submitActionType === 'home') {
+                resetApp();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('stats-header').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            const hasPersonality = currentQuestions.some(q => q.isPersonality);
+            const hasAcademic = currentQuestions.some(q => !q.isPersonality);
+
+            let statsGridHtml = '';
+            let bigFiveHtml = '';
+
+            if (hasAcademic) {
+                const academicQuestions = currentQuestions.filter(q => !q.isPersonality);
+                const totalAcademic = academicQuestions.length;
+                let correctCount = 0;
+                
+                currentQuestions.forEach((q, idx) => {
+                    if (!q.isPersonality && userAnswers[idx] === q.answer) {
+                        correctCount++;
+                    }
+                });
+
+                const incorrect = totalAcademic - correctCount;
+                const percentage = totalAcademic > 0 ? Math.round((correctCount / totalAcademic) * 100) : 0;
+
+                statsGridHtml += `
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">Markah</div>
+                        <div class="text-2xl font-bold text-blue-600">${correctCount}/${totalAcademic}</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">Peratusan</div>
+                        <div class="text-2xl font-bold text-emerald-600">${percentage}%</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">Betul</div>
+                        <div class="text-2xl font-bold text-green-600">${correctCount}</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-xs text-slate-500 mb-1">Salah</div>
+                        <div class="text-2xl font-bold text-rose-600">${incorrect}</div>
+                    </div>
+                `;
+                document.getElementById('result-stats-grid').innerHTML = statsGridHtml;
+            } else {
+                document.getElementById('result-stats-grid').style.display = 'none';
+            }
+
+            if (hasPersonality) {
+                let scores = [0, 0, 0, 0, 0];
+                let counts = [0, 0, 0, 0, 0];
+
+                currentQuestions.forEach((q, idx) => {
+                    if (q.isPersonality && userAnswers[idx] !== null) {
+                        let dim = q.dimension;
+                        let val = 4 - userAnswers[idx];
+                        scores[dim] += val;
+                        counts[dim]++;
+                    }
+                });
+
+                let oceanNames = [
+                    { name: "Openness (Keterbukaan Minda & Kreativiti)", desc: "Mengukur tahap rasa ingin tahu, imaginasi, dan keterbukaan kepada idea baharu." },
+                    { name: "Conscientiousness (Kesedaran & Disiplin Diri)", desc: "Mengukur tahap keteraturan, ketekunan, tanggungjawab, dan pengurusan masa." },
+                    { name: "Extraversion (Ekstroversi & Tenaga Sosial)", desc: "Mengukur tahap tenaga, keyakinan bersosial, dan keterujaan berinteraksi." },
+                    { name: "Agreeableness (Kesepakatan & Empati)", desc: "Mengukur tahap kerjasama, kebaikan hati, dan kepedulian terhadap orang lain." },
+                    { name: "Neuroticism (Kestabilan Emosi & Ketahanan Stres)", desc: "Mengukur kerentanan terhadap tekanan emosi dan kebimbangan." }
+                ];
+
+                bigFiveHtml += `<div class="border-t border-slate-200 pt-6 mt-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Analisis Profil Keperibadian (Big Five OCEAN)</h3>
+                    <p class="text-xs text-slate-500 mb-4">Berikut adalah taburan skor profil personaliti anda berdasarkan jawapan yang diberikan:</p>
+                    <div class="space-y-4">`;
+
+                for (let i = 0; i < 5; i++) {
+                    let avg = counts[i] > 0 ? (scores[i] / (counts[i] * 4)) * 100 : 0;
+                    let roundedAvg = Math.round(avg);
+                    
+                    bigFiveHtml += `
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-bold text-slate-800">${oceanNames[i].name}</span>
+                                <span class="text-sm font-bold text-purple-600">${roundedAvg}%</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mb-2">${oceanNames[i].desc}</p>
+                            <div class="w-full bg-slate-200 rounded-full h-2.5">
+                                <div class="bg-purple-600 h-2.5 rounded-full" style="width: ${roundedAvg}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                bigFiveHtml += `</div></div>`;
+
+                document.getElementById('big-five-results-container').innerHTML = bigFiveHtml;
+                document.getElementById('big-five-results-container').classList.remove('hidden');
+            }
+
+            if (hasAcademic && !hasPersonality) {
+                document.getElementById('result-title').innerText = 'Keputusan Simulasi Akademik UKKM';
+                document.getElementById('result-subtitle').innerText = 'Tahniah kerana telah melengkapkan modul latihan akademik!';
+                document.getElementById('result-stats-grid').style.display = 'grid';
+            } else if (!hasAcademic && hasPersonality) {
+                document.getElementById('result-title').innerText = 'Sesi Modul Keperibadian Selesai';
+                document.getElementById('result-subtitle').innerText = 'Terima kasih kerana melengkapkan 80 pernyataan penilaian keperibadian. Ujian keperibadian ini tidak mempunyai markah, dan tiada jawapan yang betul atau salah. Ujian ini bertujuan untuk membantu mengenal pasti kecenderungan diri, cara berfikir, gaya berinteraksi dengan orang lain serta cara seseorang mengurus emosi dan tanggungjawab.';
+            } else {
+                document.getElementById('result-title').innerText = 'Keputusan Simulasi Penuh Pakej UKKM';
+                document.getElementById('result-subtitle').innerText = 'Tahniah! Anda telah berjaya melengkapkan modul akademik dan keperibadian. Ujian keperibadian ini tidak mempunyai markah, dan tiada jawapan yang betul atau salah. Ujian ini bertujuan untuk membantu mengenal pasti kecenderungan diri, cara berfikir, gaya berinteraksi dengan orang lain serta cara seseorang mengurus emosi dan tanggungjawab.';
+                document.getElementById('result-stats-grid').style.display = 'grid';
+            }
+        }
+
+        function resetApp() {
+            clearInterval(timerInterval);
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-home').classList.remove('hidden');
+            document.getElementById('stats-header').classList.add('hidden');
+            document.getElementById('result-stats-grid').style.display = 'grid';
+            document.getElementById('big-five-results-container').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
